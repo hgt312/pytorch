@@ -1,4 +1,3 @@
-#include <torch/csrc/jit/passes/quantization.h>
 #include <torch/csrc/jit/passes/constant_pooling.h>
 #include <torch/csrc/jit/passes/constant_propagation.h>
 #include <torch/csrc/jit/passes/freeze_module.h>
@@ -6,6 +5,7 @@
 #include <torch/csrc/jit/passes/graph_rewrite_helper.h>
 #include <torch/csrc/jit/passes/inliner.h>
 #include <torch/csrc/jit/passes/prepack_folding.h>
+#include <torch/csrc/jit/passes/quantization.h>
 #include <torch/csrc/jit/passes/quantization_patterns.h>
 #include <torch/csrc/jit/passes/subgraph_rewrite.h>
 
@@ -32,31 +32,13 @@ using NameModuleVector = std::vector<std::pair<std::string, Module>>;
 using graph_rewrite_helper::getFuncName;
 using graph_rewrite_helper::getIValue;
 using graph_rewrite_helper::getValue;
+using graph_rewrite_helper::PatternInfo;
 using graph_rewrite_helper::replaceConvolutionWithConv2d;
 
 // Map of quantization parameter name and value
 // for example _scale, _zero_point,
 // _scalar_type and _axis(for per channel quantization)
 using QParamVector = std::vector<std::pair<std::string, IValue>>;
-
-// This struct contains a compiled IR patterns slated for use in the
-// findPatternMatches function. The struct encapsulates the common
-// information from parseIR that is used in conjunction with the
-// pattern matching facility. A const instance of this struct can
-// also be stored away to cache the compiled IR pattern and reduce
-// runtime cost
-struct PatternInfo {
-  std::string pattern_string;
-  std::unique_ptr<Graph> pattern_graph;
-  std::unordered_map<std::string, Value*> vmap;
-
-  static PatternInfo parse_from_str(std::string pattern_string) {
-    PatternInfo rv{
-        std::move(pattern_string), std::make_unique<Graph>(), decltype(vmap){}};
-    parseIR(rv.pattern_string, rv.pattern_graph.get(), rv.vmap);
-    return rv;
-  }
-};
 
 struct PatternsAndModules {
   bool is_conv;
