@@ -25,7 +25,7 @@ at::Tensor top_forward(at::Tensor input) {
   return output;
 }
 
-at::Tensor buttom_forward(at::Tensor input) {
+at::Tensor bottom_forward(at::Tensor input) {
   // Initialize output
   at::Tensor output = at::zeros_like(input);
 
@@ -87,8 +87,8 @@ static auto registry = torch::RegisterOperators()
     .schema("corner_pools::top(Tensor a) -> Tensor")
     .catchAllKernel<decltype(top_forward), &top_forward>())
   .op(torch::RegisterOperators::options()
-    .schema("corner_pools::buttom(Tensor a) -> Tensor")
-    .catchAllKernel<decltype(buttom_forward), &buttom_forward>())
+    .schema("corner_pools::bottom(Tensor a) -> Tensor")
+    .catchAllKernel<decltype(bottom_forward), &bottom_forward>())
   .op(torch::RegisterOperators::options()
     .schema("corner_pools::left(Tensor a) -> Tensor")
     .catchAllKernel<decltype(left_forward), &left_forward>())
